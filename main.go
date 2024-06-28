@@ -1,19 +1,17 @@
 package main
 
 import (
-	"net/http"
+	"MatchMaker/routes"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := gin.Default()
-	r.GET("/ping", ping)
+	addRoutes(r)
 	r.Run()
 }
 
-func ping(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
+func addRoutes(r *gin.Engine) {
+	routes.AuthRoutes(r)
 }
