@@ -1,0 +1,35 @@
+version: "3.8"
+
+name: matchmaker
+
+services:
+  db: 
+    container_name: matchmaker_database
+    image:  mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: MatchMaker!
+    volumes:
+      - sql-data:/var/opt/mssql/data
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "MatchMaker!" -Q "SELECT 1" || exit 1
+      interval: 1s
+      timeout: 1s
+      retries: 30
+
+  webapi:
+    container_name: matchmaker_api
+    build:
+      context: . # Brug punktum, hvis Dockerfile er i samme mappe som docker-compose.yml
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  sql-data:
+    name: matchmaker_db_data
