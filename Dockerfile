@@ -14,10 +14,10 @@ RUN go mod download
 COPY . .
 
 # Byg applikationen
-RUN go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 # Kør en mindre runtime image
-FROM alpine:latest
+FROM gcr.io/distroless/base-debian11
 
 WORKDIR /root/
 
