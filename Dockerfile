@@ -1,5 +1,5 @@
-# Start med en Go-baseret base image
-FROM golang:1.20 AS builder
+# Start med en Go-baseret Debian image for at bygge applikationen
+FROM golang:1.20-buster AS builder
 
 # Sæt arbejdsbiblioteket
 WORKDIR /app
@@ -14,10 +14,10 @@ RUN go mod download
 COPY . .
 
 # Byg applikationen
-RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+RUN go build -o main .
 
 # Kør en mindre runtime image
-FROM gcr.io/distroless/base-debian11
+FROM debian:bullseye-slim
 
 WORKDIR /root/
 
