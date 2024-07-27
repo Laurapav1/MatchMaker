@@ -20,4 +20,5 @@ func main() {
 
 func addRoutes(r *gin.Engine) {
 	routes.AuthRoutes(r)
+	routes.GameRequestRoutes(r)
 }

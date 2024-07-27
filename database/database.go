@@ -1,6 +1,7 @@
 package database
 
 import (
+	"MatchMaker/models"
 	"database/sql"
 	"fmt"
 	"log"
@@ -24,11 +25,11 @@ func InitDB() {
 	}
 	fmt.Println("Connected to the database successfully!")
 
-		// Tjek om CreateSearch-tabellen eksisterer, og opret den, hvis ikke
-		_, err = DB.Exec(`
-		IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Search')
+	// Tjek om GameRequest-tabellen eksisterer, og opret den, hvis ikke
+	_, err = DB.Exec(`
+		IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'GameRequest')
 		BEGIN
-			CREATE TABLE Search (
+			CREATE TABLE GameRequest (
 				ID INT PRIMARY KEY IDENTITY,
 				Niveau INT,
 				Location NVARCHAR(100),
@@ -38,8 +39,32 @@ func InitDB() {
 				Price DECIMAL(10, 2)
 			)
 		END`)
-		if err != nil {
-			log.Fatal("Error creating Search table: ", err.Error())
+	if err != nil {
+		log.Fatal("Error creating GameRequest table: ", err.Error())
+	}
+	fmt.Println("Ensured GameRequest table exists.")
+}
+
+func GetAllGameRequests() ([]models.GameRequest, error) {
+	rows, err := DB.Query("SELECT ID, Niveau, Location, Time, Gender, Amount, Price FROM GameRequest")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []models.GameRequest
+	for rows.Next() {
+		var cs models.GameRequest
+		if err := rows.Scan(&cs.ID, &cs.Niveau, &cs.Location, &cs.Time, &cs.Gender, &cs.Amount, &cs.Price); err != nil {
+			return nil, err
 		}
-		fmt.Println("Ensured Search table exists.")
+		results = append(results, cs)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return results, nil
 }
