@@ -31,11 +31,11 @@ func CreateGameRequest(c *gin.Context) {
 }
 
 func GetGameRequest(c *gin.Context) {
-	createSearches, err := database.GetAllGameRequests()
+	getGameRequest, err := database.GetAllGameRequests()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, createSearches)
+	c.JSON(http.StatusOK, getGameRequest)
 }
