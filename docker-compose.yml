@@ -23,8 +23,7 @@ services:
   webapi:
     container_name: matchmaker_api
     build:
-      context: . # Brug punktum, hvis Dockerfile er i samme mappe som docker-compose.yml
-      dockerfile: Dockerfile
+      context: backend
     ports:
       - "8080:8080"
     depends_on:
