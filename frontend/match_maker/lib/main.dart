@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:match_maker/models/game_request.dart';
+import 'package:match_maker/config.dart';
 
 
 Future<List<GameRequest>> fetchMatches() async {
-  final response = await http.get(Uri.parse('http://localhost:8080/gamerequest'));
-
+  final response = await http.get(Uri.parse('${Config.getBaseURL}/gamerequest'));
   if (response.statusCode == 200) {
     Iterable<dynamic> gameRequests = jsonDecode(response.body);
     return gameRequests.map((elem) => GameRequest.fromJson(elem)).toList();
