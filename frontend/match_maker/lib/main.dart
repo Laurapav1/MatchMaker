@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:match_maker/models/game_request.dart';
+import 'package:match_maker/config.dart';
 
 Future<List<GameRequest>> fetchMatches() async {
   final response =
