@@ -7,15 +7,14 @@ class GameRequest {
   final int amount;
   final double price;
 
-  const GameRequest({
-    required this.id,
-    required this.niveau,
-    required this.location,
-    required this.time,
-    required this.gender,
-    required this.amount,
-    required this.price
-  });
+  const GameRequest(
+      {required this.id,
+      required this.niveau,
+      required this.location,
+      required this.time,
+      required this.gender,
+      required this.amount,
+      required this.price});
 
   factory GameRequest.fromJson(Map<String, dynamic> json) {
     return switch (json) {
