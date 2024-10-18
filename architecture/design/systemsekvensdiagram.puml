@@ -1,0 +1,24 @@
+@startuml
+participant Bruger
+participant API
+participant Database
+
+Bruger -> API: Logger ind
+API -> Database: Tjekker om brugeren er oprettet
+Database --> API: Brugeren findes ikke
+API --> Bruger: Brugeren findes ikke
+
+Bruger -> API: Opret bruger
+API -> Database: Tjekker om brugeren eksisterer
+Database --> API: Brugeren findes ikke
+API -> Database: Brugeren oprettes
+Database -> API: Brugeren er oprettet
+API -> Bruger: Brugeren er oprettet
+
+Bruger -> API: Opretter spil
+API --> Bruger: Indtastet forkert
+Bruger -> API: Opretter spil
+API -> Database: Spillet oprettes
+Database --> API: Spillet er oprettet
+API -> Bruger: Spillet er oprettet
+@enduml
