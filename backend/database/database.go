@@ -45,6 +45,23 @@ func InitDB() {
 	}
 	fmt.Println("Ensured GameRequest table exists.")
 
+	// Tjek om User-tabellen eksisterer, og opret den, hvis ikk
+	_, err = DB.Exec(`
+		IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'User')
+		BEGIN
+			CREATE TABLE [User] (
+				ID INT PRIMARY KEY IDENTITY,
+            	FirstName NVARCHAR(100),
+            	LastName NVARCHAR(100),
+            	Email NVARCHAR(100) UNIQUE,
+            	Password NVARCHAR(255)
+			)
+		END`)
+	if err != nil {
+		log.Fatal("Error creating User table: ", err.Error())
+	}
+	fmt.Println("Ensured User table exists.")
+
 	insertDummyData()
 }
 
