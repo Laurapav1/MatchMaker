@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"MatchMaker/auth"
 	"MatchMaker/database"
 	"MatchMaker/models"
 	"database/sql"
@@ -68,9 +69,14 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Hvis adgangskoden er korrekt, kan du returnere et succesfuldt svar eller oprette et session token
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	jwtToken, err := auth.CreateToken(user.Email)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 
+	c.SetCookie("Authorization", jwtToken, auth.ExpirationTimeSeconds, "/", "localhost", true, true)
+	c.Status(http.StatusOK)
 }
 
 // GET /logout
