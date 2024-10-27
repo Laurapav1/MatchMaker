@@ -10,5 +10,5 @@ import (
 func AuthRoutes(router *gin.Engine) {
 	router.POST("/signup", controllers.SignUpUser)
 	router.POST("/login", controllers.Login)
-	router.GET("/logout", controllers.Logout)
+	router.GET("/logout", controllers.AuthMiddleware(), controllers.Logout)
 }

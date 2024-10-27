@@ -1,7 +1,6 @@
 package database
 
 import (
-	"MatchMaker/models"
 	"database/sql"
 	"fmt"
 	"log"
@@ -32,6 +31,7 @@ func InitDB() {
 		BEGIN
 			CREATE TABLE GameRequest (
 				ID INT PRIMARY KEY IDENTITY,
+				UserEmail NVARCHAR(100),
 				Niveau INT,
 				Location NVARCHAR(100),
 				Time DATETIME,
@@ -67,6 +67,7 @@ func InitDB() {
 
 func insertDummyData() {
 	// Example unique constraint could be based on a combination of Niveau, Location, Time, and Gender
+	userEmail := "SampleUser@email.com"
 	location := "Sample Location"
 	gender := "Any"
 	niveau := 1
@@ -80,9 +81,9 @@ func insertDummyData() {
 	switch {
 	case err == sql.ErrNoRows:
 		// Record does not exist, insert the dummy data
-		_, err = DB.Exec(`INSERT INTO GameRequest (Niveau, Location, Time, Gender, Amount, Price)
-		                  VALUES (@p1, @p2, @p3, @p4, @p5, @p6)`,
-			niveau, location, time, gender, 10, 99.99)
+		_, err = DB.Exec(`INSERT INTO GameRequest (UserEmail, Niveau, Location, Time, Gender, Amount, Price)
+		                  VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7)`,
+			userEmail, niveau, location, time, gender, 10, 99.99)
 		if err != nil {
 			log.Fatal("Error inserting dummy data: ", err.Error())
 		}
@@ -92,28 +93,4 @@ func insertDummyData() {
 	default:
 		fmt.Println("Record already exists, skipping insert.")
 	}
-}
-
-func GetAllGameRequests() ([]models.GameRequest, error) {
-	rows, err := DB.Query("SELECT ID, Niveau, Location, Time, Gender, Amount, Price FROM GameRequest")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var results []models.GameRequest
-	for rows.Next() {
-		var cs models.GameRequest
-		if err := rows.Scan(&cs.ID, &cs.Niveau, &cs.Location, &cs.Time, &cs.Gender, &cs.Amount, &cs.Price); err != nil {
-			return nil, err
-		}
-		results = append(results, cs)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-
-	return results, nil
 }

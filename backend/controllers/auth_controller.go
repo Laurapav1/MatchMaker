@@ -102,7 +102,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Set user information from the token in the request context
-		c.Set("user", sub)
+		c.Set("userEmail", sub)
 
 		// Proceed to the next middleware or route handler
 		c.Next()

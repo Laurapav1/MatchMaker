@@ -7,7 +7,7 @@ import (
 )
 
 func GameRequestRoutes(router *gin.Engine) {
-	router.POST("/gamerequest", controllers.CreateGameRequest) //Add a Game
-	router.GET("/gamerequest", controllers.GetGameRequest) // Get a game
+	router.POST("/gamerequests", controllers.AuthMiddleware(), controllers.CreateGameRequest) //Add a Game
+	router.GET("/gamerequests", controllers.AuthMiddleware(), controllers.GetGameRequest) // Get a game
 	
 }
