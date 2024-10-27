@@ -111,7 +111,10 @@ func AuthMiddleware() gin.HandlerFunc {
 
 // GET /logout
 func Logout(c *gin.Context) {
+	c.SetCookie("Authorization", "", -1, "/", "localhost", true, true)
+
+	// Return a success message
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Logout",
+		"message": "Successfully logged out",
 	})
 }

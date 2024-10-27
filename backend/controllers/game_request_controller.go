@@ -61,26 +61,72 @@ func GetGameRequest(c *gin.Context) {
 		return
 	}
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	// Send the results as JSON
 	c.JSON(http.StatusOK, results)
 }
 
-// GET all games
-func GetAllGameRequests(c *gin.Context) {
-
-}
-
 // Delete a game/{id}
 func DeleteGame(c *gin.Context) {
+	gameID := c.Param("id")
 
+	result, err := database.DB.Exec("DELETE FROM GameRequest WHERE ID = @p1", gameID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete game"})
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get affected rows"})
+		return
+	}
+
+	// If no rows were affected, the game doesn't exist
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
+		return
+	}
+
+	// Return a success message
+	c.JSON(http.StatusOK, gin.H{"message": "Game deleted successfully"})
 }
 
 // Put / Change a game/{id}
 func ChangeGame(c *gin.Context) {
+	gameID := c.Param("id")
 
+	// Bind the request JSON to a GameRequest struct
+	var input models.GameRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	// Execute the update statement in the database
+	result, err := database.DB.Exec(`
+		UPDATE GameRequest 
+		SET Niveau = @p1, Location = @p2, Time = @p3, Gender = @p4, Amount = @p5, Price = @p6
+		WHERE ID = @p7`,
+		input.Niveau, input.Location, input.Time, input.Gender, input.Amount, input.Price, gameID,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update game"})
+		return
+	}
+
+	// Check how many rows were affected (should be 1 if the game existed and was updated)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get affected rows"})
+		return
+	}
+
+	// If no rows were affected, the game doesn't exist
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
+		return
+	}
+
+	// Return a success message
+	c.JSON(http.StatusOK, gin.H{"message": "Game updated successfully"})
 }
