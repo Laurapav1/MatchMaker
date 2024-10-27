@@ -1,67 +1,37 @@
 package database
 
 import (
-	"database/sql"
+	"MatchMaker/models"
 	"fmt"
 	"log"
 	"time"
+
+	"gorm.io/driver/sqlserver"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
-// initDB opretter forbindelse til SQL Server databasen
+// InitDB sets up the connection to the SQL Server database and initializes the tables.
 func InitDB() {
 	var err error
-	// Opdater med dine forbindelsesdetaljer
-	connString := "server=matchmaker_database;user id=sa;Password=MatchMaker!;database=master"
-	DB, err = sql.Open("sqlserver", connString)
+	connString := "sqlserver://sa:MatchMaker!@matchmaker_database:1433?database=master"
+
+	// Open the database connection using GORM with SQL Server driver
+	DB, err = gorm.Open(sqlserver.Open(connString), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Error opening database: ", err.Error())
+		log.Fatal("Error connecting to the database: ", err.Error())
 	}
 
-	err = DB.Ping()
+	// Auto migrate the models to create tables if they do not exist
+	err = DB.AutoMigrate(&models.User{}, &models.GameRequest{})
 	if err != nil {
-		log.Fatal("Error pinging database: ", err.Error())
+		log.Fatal("Error migrating database: ", err.Error())
 	}
-	fmt.Println("Connected to the database successfully!")
 
-	// Tjek om GameRequest-tabellen eksisterer, og opret den, hvis ikke
-	_, err = DB.Exec(`
-		IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'GameRequest')
-		BEGIN
-			CREATE TABLE GameRequest (
-				ID INT PRIMARY KEY IDENTITY,
-				UserEmail NVARCHAR(100),
-				Niveau INT,
-				Location NVARCHAR(100),
-				Time DATETIME,
-				Gender NVARCHAR(50),
-				Amount INT,
-				Price DECIMAL(10, 2)
-			)
-		END`)
-	if err != nil {
-		log.Fatal("Error creating GameRequest table: ", err.Error())
-	}
-	fmt.Println("Ensured GameRequest table exists.")
+	fmt.Println("Connected to the database and ensured tables exist.")
 
-	// Tjek om User-tabellen eksisterer, og opret den, hvis ikk
-	_, err = DB.Exec(`
-		IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'User')
-		BEGIN
-			CREATE TABLE [User] (
-				ID INT PRIMARY KEY IDENTITY,
-            	FirstName NVARCHAR(100),
-            	LastName NVARCHAR(100),
-            	Email NVARCHAR(100) UNIQUE,
-            	Password NVARCHAR(255)
-			)
-		END`)
-	if err != nil {
-		log.Fatal("Error creating User table: ", err.Error())
-	}
-	fmt.Println("Ensured User table exists.")
-
+	// Insert dummy data if necessary
 	insertDummyData()
 }
 
@@ -74,23 +44,28 @@ func insertDummyData() {
 	time := time.Now()
 
 	// Check if the record already exists
-	var id int
-	err := DB.QueryRow(`SELECT ID FROM GameRequest WHERE Niveau = @p1 AND Location = @p2 AND Gender = @p4`,
-		niveau, location, time, gender).Scan(&id)
+	var existingGameRequest models.GameRequest
+	err := DB.Where("niveau = ? AND location = ? AND time = ? AND gender = ?", niveau, location, time, gender).First(&existingGameRequest).Error
 
-	switch {
-	case err == sql.ErrNoRows:
+	if err == gorm.ErrRecordNotFound {
 		// Record does not exist, insert the dummy data
-		_, err = DB.Exec(`INSERT INTO GameRequest (UserEmail, Niveau, Location, Time, Gender, Amount, Price)
-		                  VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7)`,
-			userEmail, niveau, location, time, gender, 10, 99.99)
-		if err != nil {
+		dummyGameRequest := models.GameRequest{
+			UserEmail: userEmail,
+			Niveau:    niveau,
+			Location:  location,
+			Time:      time,
+			Gender:    gender,
+			Amount:    10,
+			Price:     99.99,
+		}
+
+		if err := DB.Create(&dummyGameRequest).Error; err != nil {
 			log.Fatal("Error inserting dummy data: ", err.Error())
 		}
 		fmt.Println("Inserted dummy data into GameRequest table successfully!")
-	case err != nil:
+	} else if err != nil {
 		log.Fatal("Error checking for existing record: ", err.Error())
-	default:
+	} else {
 		fmt.Println("Record already exists, skipping insert.")
 	}
 }

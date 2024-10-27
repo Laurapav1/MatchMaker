@@ -1,12 +1,14 @@
 package models
 
+import "time"
+
 type GameRequest struct {
-	ID        int     `json:"id,omitempty"`
-	UserEmail string  `json:"user,omitempty"`
-	Niveau    int     `json:"niveau"`
-	Location  string  `json:"location"`
-	Time      string  `json:"time"`
-	Gender    string  `json:"gender"`
-	Amount    int     `json:"amount"`
-	Price     float64 `json:"price"`
+	ID        int    `gorm:"primaryKey"`
+	UserEmail string `gorm:"size:100"`
+	Niveau    int
+	Location  string `gorm:"size:100"`
+	Time      time.Time
+	Gender    string `gorm:"size:50"`
+	Amount    int
+	Price     float64 `gorm:"type:decimal(10,2)"`
 }

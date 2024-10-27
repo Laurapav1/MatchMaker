@@ -5,13 +5,10 @@ import (
 	"MatchMaker/routes"
 
 	"github.com/gin-gonic/gin"
-
-	_ "github.com/denisenkom/go-mssqldb"
 )
 
 func main() {
 	database.InitDB()
-	defer database.DB.Close()
 
 	r := gin.Default()
 	addRoutes(r)
