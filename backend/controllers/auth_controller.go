@@ -79,6 +79,36 @@ func Login(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Retrieve the JWT token from the cookie
+		tokenString, err := c.Cookie("Authorization")
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		// Verify the token (assuming you have a method in the auth package to validate the token)
+		token, err := auth.VerifyToken(tokenString)
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		sub, err := token.Claims.GetSubject()
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		// Set user information from the token in the request context
+		c.Set("user", sub)
+
+		// Proceed to the next middleware or route handler
+		c.Next()
+	}
+}
+
 // GET /logout
 func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{

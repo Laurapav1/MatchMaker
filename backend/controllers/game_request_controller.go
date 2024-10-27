@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
+// POST // add a game
 func CreateGameRequest(c *gin.Context) {
 	var input models.GameRequest
 
@@ -30,6 +32,7 @@ func CreateGameRequest(c *gin.Context) {
 	})
 }
 
+// GET // Get a game{id}
 func GetGameRequest(c *gin.Context) {
 	getGameRequest, err := database.GetAllGameRequests()
 	if err != nil {
@@ -38,4 +41,20 @@ func GetGameRequest(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, getGameRequest)
+}
+
+
+// GET all games
+func GetAllGameRequests(c *gin.Context){
+
+}
+
+// Delete a game/{id}
+func DeleteGame(c *gin.Context){
+
+}
+
+// Put / Change a game/{id}
+func ChangeGame(c *gin.Context){
+
 }
