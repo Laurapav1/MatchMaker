@@ -15,14 +15,14 @@ dependencies:
   cupertino_icons: ^1.0.6
   http: ^1.2.2
   json_annotation: ^4.9.0
-  syncfusion_flutter_datepicker: ^26.2.7
+  syncfusion_flutter_datepicker: ^27.1.57
   table_calendar: ^3.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
   json_serializable: ^6.8.0
   build_runner: ^2.4.11
 

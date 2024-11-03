@@ -1,11 +1,9 @@
-version: "3.8"
-
 name: matchmaker
 
 services:
-  db: 
+  db:
     container_name: matchmaker_database
-    image:  mcr.microsoft.com/mssql/server:2019-latest
+    image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: MatchMaker!
@@ -15,10 +13,10 @@ services:
       - "1433:1433"
     user: root
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "MatchMaker!" -Q "SELECT 1" || exit 1
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "MatchMaker!" -Q "SELECT 1" -C || exit 1
       interval: 1s
       timeout: 1s
-      retries: 30
+      retries: 300
 
   webapi:
     container_name: matchmaker_api

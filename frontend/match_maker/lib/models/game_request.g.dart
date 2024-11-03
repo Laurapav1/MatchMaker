@@ -7,22 +7,24 @@ part of 'game_request.dart';
 // **************************************************************************
 
 GameRequest _$GameRequestFromJson(Map<String, dynamic> json) => GameRequest(
-      id: (json['id'] as num).toInt(),
-      niveau: (json['niveau'] as num).toInt(),
-      location: json['location'] as String,
-      time: json['time'] as String,
-      gender: json['gender'] as String,
-      amount: (json['amount'] as num).toInt(),
-      price: (json['price'] as num).toDouble(),
+      id: (json['ID'] as num?)?.toInt(),
+      userEmail: json['UserEmail'] as String,
+      niveau: (json['Niveau'] as num).toInt(),
+      location: json['Location'] as String,
+      time: DateTime.parse(json['Time'] as String),
+      gender: json['Gender'] as String,
+      amount: (json['Amount'] as num).toInt(),
+      price: (json['Price'] as num).toDouble(),
     );
 
 Map<String, dynamic> _$GameRequestToJson(GameRequest instance) =>
     <String, dynamic>{
-      'id': instance.id,
-      'niveau': instance.niveau,
-      'location': instance.location,
-      'time': instance.time,
-      'gender': instance.gender,
-      'amount': instance.amount,
-      'price': instance.price,
+      'ID': instance.id,
+      'UserEmail': instance.userEmail,
+      'Niveau': instance.niveau,
+      'Location': instance.location,
+      'Time': instance.time.toIso8601String(),
+      'Gender': instance.gender,
+      'Amount': instance.amount,
+      'Price': instance.price,
     };

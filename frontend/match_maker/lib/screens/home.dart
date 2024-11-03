@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -7,13 +8,26 @@ import 'package:match_maker/models/game_request.dart';
 import 'add_game_request.dart';
 
 Future<List<GameRequest>> fetchMatches(DateTime date) async {
-  final response = await http.get(Uri.parse(
-      '${Config.getBaseURL}/gamerequest?date=${date.toIso8601String()}'));
-  if (response.statusCode == 200) {
-    Iterable<dynamic> gameRequests = jsonDecode(response.body);
-    return gameRequests.map((elem) => GameRequest.fromJson(elem)).toList();
-  } else {
-    throw Exception('Failed to load matches');
+  try {
+    final response = await http.get(Uri.parse(
+        '${Config.getBaseURL}/gamerequests?date=${date.toIso8601String()}'));
+
+    if (response.statusCode == 200) {
+      Iterable<dynamic> gameRequests = jsonDecode(response.body);
+      return gameRequests.map((elem) => GameRequest.fromJson(elem)).toList();
+    } else {
+      throw Exception('Failed to load matches');
+    }
+  } catch (e) {
+    // Log the exception or handle it gracefully
+    if (e is SocketException) {
+      // Server is unreachable
+      print('Server is unreachable: $e');
+    } else {
+      print('An error occurred: $e');
+    }
+    // Return an empty list or handle the error appropriately
+    return [];
   }
 }
 
@@ -27,7 +41,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late Future<List<GameRequest>> futureGameRequests;
   DateTime _selectedDay = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
   CalendarFormat _calendarFormat = CalendarFormat.week;
 
   @override
@@ -53,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
       futureGameRequests = fetchMatches(_selectedDay);
     });
   }
@@ -88,7 +100,9 @@ class _MyHomePageState extends State<MyHomePage> {
               future: futureGameRequests,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else if (snapshot.hasData) {
@@ -99,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       final gameRequest = gameRequests[index];
                       return ListTile(
                         title: Text(gameRequest.id.toString()),
-                        subtitle: Text(gameRequest.time),
+                        subtitle: Text(gameRequest.time.toString()),
                       );
                     },
                   );

@@ -25,23 +25,37 @@ class _AddGameRequestScreenState extends State<AddGameRequestScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      final response = await http.post(
-        Uri.parse('${Config.getBaseURL}/gamerequest'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(GameRequest(
-          niveau: _niveau,
-          location: _location,
-          time: _time,
-          gender: _gender,
-          amount: _amount,
-          price: _price,
-        )),
-      );
+      try {
+        final response = await http.post(
+          Uri.parse('${Config.getBaseURL}/gamerequest'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(GameRequest(
+            userEmail: "sample@email.com",
+            niveau: _niveau,
+            location: _location,
+            time: DateTime.parse(_time),
+            gender: _gender,
+            amount: _amount,
+            price: _price,
+          )),
+        );
 
-      if (response.statusCode == 201) {
-        Navigator.pop(context, true); // Return to the previous screen
-      } else {
-        throw Exception('Failed to create game request');
+        if (response.statusCode == 201) {
+          // Ensure widget is still mounted before accessing context
+          if (mounted) {
+            Navigator.pop(context, true); // Return to the previous screen
+          }
+        } else {
+          throw Exception('Failed to create game request');
+        }
+      } catch (e) {
+        // Handle any exceptions or show error to the user
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('An error occurred. Please try again.')),
+          );
+        }
       }
     }
   }
@@ -117,7 +131,8 @@ class _AddGameRequestScreenState extends State<AddGameRequestScreen> {
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Price'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 onSaved: (value) => _price = double.parse(value!),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
