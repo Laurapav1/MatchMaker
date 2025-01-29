@@ -4,6 +4,7 @@ import (
 	"MatchMaker/database"
 	"MatchMaker/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +34,7 @@ func CreateGameRequest(c *gin.Context) {
 }
 
 // GET /game
-func GetGameRequest(c *gin.Context) {
+func GetAllGameRequests(c *gin.Context) {
 	var results []models.GameRequest
 
 	// Retrieve all game requests using GORM
@@ -43,6 +44,72 @@ func GetGameRequest(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, results)
+}
+
+type GameRequestQuery struct {
+	User     string `form:"user"`
+	MinLevel int    `form:"minLevel"`
+	MaxLevel int    `form:"maxLevel"`
+	Location string `form:"location"`
+	From     string `form:"from"`
+	To       string `form:"to"`
+	Gender   string `form:"gender"`
+}
+
+func GetGameRequests(c *gin.Context) {
+	var query GameRequestQuery
+	// Bind query parameters to the struct
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query parameters"})
+		return
+	}
+
+	var gameRequests []models.GameRequest
+	dbQuery := database.DB.Model(&models.GameRequest{})
+
+	// Apply filters dynamically
+	if query.User != "" {
+		dbQuery = dbQuery.Where("user_email = ?", query.User)
+	}
+	if query.MinLevel > 0 {
+		dbQuery = dbQuery.Where("niveau >= ?", query.MinLevel)
+	}
+	if query.MaxLevel > 0 {
+		dbQuery = dbQuery.Where("niveau <= ?", query.MaxLevel)
+	}
+	if query.Location != "" {
+		dbQuery = dbQuery.Where("location = ?", query.Location)
+	}
+	if query.Gender != "" {
+		dbQuery = dbQuery.Where("gender = ?", query.Gender)
+	}
+
+	// Handle time range filters
+	if query.From != "" {
+		fromTime, err := time.Parse("2006-01-02T15:04", query.From)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid 'from' format. Use YYYY-MM-DDTHH:MM"})
+			return
+		}
+		dbQuery = dbQuery.Where("time >= ?", fromTime)
+	}
+	if query.To != "" {
+		toTime, err := time.Parse("2006-01-02T15:04", query.To)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid 'to' format. Use YYYY-MM-DDTHH:MM"})
+			return
+		}
+		dbQuery = dbQuery.Where("time <= ?", toTime)
+	}
+
+	// Execute the query
+	if err := dbQuery.Find(&gameRequests).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve game requests"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gameRequests)
+
 }
 
 // DELETE /game/{id}

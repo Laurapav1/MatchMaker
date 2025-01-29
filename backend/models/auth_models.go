@@ -12,3 +12,4 @@ type User struct {
 	Email     string `gorm:"size:100;uniqueIndex"`
 	Password  string `gorm:"size:255"`
 }
+
